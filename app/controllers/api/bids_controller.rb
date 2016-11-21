@@ -8,7 +8,7 @@ class Api::BidsController < ApplicationController
       @bids = User.find_by(id: params[:user_id]).bids.includes(:item).includes(:user)
       render :index
     elsif params[:item_id]
-      @bid = Item.find_by(id: params[:item_id]).max_bid
+      @bid = Bid.find_by(amount: (Item.find_by(id: params[:item_id]).current_bid))
       render :show
     end
   end

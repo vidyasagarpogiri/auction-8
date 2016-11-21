@@ -17,13 +17,16 @@ class Api::BidsController < ApplicationController
     @bid = Bid.find_by(id: params[:id])
     new_amount = bid_params.amount.to_i
     difference = new_amount - @bid.amount
-    max_bid = Item.find_by(id: @bid.item_id).max_bid.amount
+    @item = Item.find_by(id: @bid.item_id)
+    max_bid = @item.current_bid
     if current_user.points >= difference && new_amount > max_bid
       @bid.amount = new_amount
       if @bid.save
         @user = User.find_by(id: @bid.user_id)
         @user.points -= difference
         @user.save
+        @item.current_bid = @bid.amount
+        @item.save
         render :show
       else
         @errors = @bid.errors.full_messages
@@ -36,12 +39,15 @@ class Api::BidsController < ApplicationController
   def create
     @bid = Bid.new(bid_params)
     @bid.user_id = current_user.id
-    max_bid = Item.find_by(id: @bid.item_id).max_bid.amount
+    @item = Item.find_by(id: @bid.item_id)
+    max_bid = @item.current_bid
     if current_user.points >= @bid.amount.to_i && @bid.amount.to_i > max_bid
       if @bid.save
         @user = User.find_by(id: @bid.user_id)
         @user.points -= @bid.amount
         @user.save
+        @item.current_bid = @bid.amount
+        @item.save
         render :show
       else
         @errors = @bid.errors.full_messages

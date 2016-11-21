@@ -6,4 +6,8 @@ class Item < ActiveRecord::Base
 
   belongs_to :item
 
+  def max_bid
+    Bid.where(item_id: self.id).maximum(:amount)
+  end
+
 end
